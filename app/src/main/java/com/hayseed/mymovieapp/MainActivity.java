@@ -1,5 +1,8 @@
 package com.hayseed.mymovieapp;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,6 +16,13 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
+
+        FragmentManager fragmentManger = getFragmentManager ();
+        FragmentTransaction fragmentTransaction = fragmentManger.beginTransaction ();
+
+        GridFragment gridFragment = new GridFragment ();
+        fragmentTransaction.add (gridFragment, "Grid Fragment");
+        fragmentTransaction.commit ();
     }
 
     @Override
