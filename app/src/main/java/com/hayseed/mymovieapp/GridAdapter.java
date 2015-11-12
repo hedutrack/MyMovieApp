@@ -26,9 +26,10 @@ public class GridAdapter extends ArrayAdapter
     @Override
     public View getView (int position, View convertView, ViewGroup parent)
     {
-        //return super.getView (position, convertView, parent);
-
-        Integer referenceId = (int) getItem (position);
+        // The magic starts with the super () in the constructor
+        // public ArrayAdapter(Context context, @LayoutRes int resource, @NonNull List<T> objects)
+        // public T getItem(int position)
+        Integer referenceId = (Integer) getItem (position);
 
         if (convertView == null)
         {
@@ -36,8 +37,9 @@ public class GridAdapter extends ArrayAdapter
         }
 
         ImageView imageView = (ImageView) convertView.findViewById (R.id.fragment_main_poster);
-        imageView.setImageResource (referenceId.intValue ());
+        imageView.setImageResource (referenceId);
 
         return convertView;
     }
+
 }

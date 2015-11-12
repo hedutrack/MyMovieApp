@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.GridLayout;
 import android.widget.GridView;
 
@@ -19,46 +20,37 @@ public class GridFragment extends Fragment
 
     private GridAdapter gridAdapter;
 
-    private Integer [] images =
-            {
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine,
-                    R.drawable.sunshine
-            };
-
     @Nullable
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        //return super.onCreateView (inflater, container, savedInstanceState);
-
         // inflate the view
         View rootView = inflater.inflate (R.layout.fragment_main, container, false);
 
         // create the adapter
-        gridAdapter = new GridAdapter (getActivity (), Arrays.asList (images));
+        gridAdapter = new GridAdapter (getActivity (), Arrays.asList (mThumbIds));
 
-        // attach to GridLayout
-        GridView gridView = (GridView) rootView.findViewById (R.id.gridview_layout);
+        // Get the grid view
+        GridView gridView = (GridView) rootView.findViewById (R.id.gridview);
+
+        // Attach the adapter
         gridView.setAdapter (gridAdapter);
 
         return rootView;
     }
+
+    // references to our images
+    private Integer[] mThumbIds = {
+            R.drawable.sample_2, R.drawable.sample_3,
+            R.drawable.sample_4, R.drawable.sample_5,
+            R.drawable.sample_6, R.drawable.sample_7,
+            R.drawable.sample_0, R.drawable.sample_1,
+            R.drawable.sample_2, R.drawable.sample_3,
+            R.drawable.sample_4, R.drawable.sample_5,
+            R.drawable.sample_6, R.drawable.sample_7,
+            R.drawable.sample_0, R.drawable.sample_1,
+            R.drawable.sample_2, R.drawable.sample_3,
+            R.drawable.sample_4, R.drawable.sample_5,
+            R.drawable.sample_6, R.drawable.sample_7
+    };
 }

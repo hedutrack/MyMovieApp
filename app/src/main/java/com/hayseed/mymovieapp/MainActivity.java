@@ -17,11 +17,17 @@ public class MainActivity extends AppCompatActivity
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
 
+        // The fragment
+        GridFragment gridFragment = new GridFragment ();
+
+        // Get the fragment manager
         FragmentManager fragmentManger = getFragmentManager ();
         FragmentTransaction fragmentTransaction = fragmentManger.beginTransaction ();
 
-        GridFragment gridFragment = new GridFragment ();
-        fragmentTransaction.add (gridFragment, "Grid Fragment");
+        // Add the fragment.  The magic lies in associating the fragment to a container. In this
+        // case, the container is defined in activity_main.xml.  There is a method for not
+        // associating the fragment to a container, but I'm not sure of the meaning of that.
+        fragmentTransaction.add (R.id.content_frame, gridFragment);
         fragmentTransaction.commit ();
     }
 
