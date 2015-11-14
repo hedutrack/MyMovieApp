@@ -6,8 +6,8 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.GridLayout;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 
 import java.util.Arrays;
@@ -17,8 +17,13 @@ import java.util.Arrays;
  */
 public class GridFragment extends Fragment
 {
+    private GridAdapter             gridAdapter;
+    private OnImageSelectedListener listener;
 
-    private GridAdapter gridAdapter;
+    public interface OnImageSelectedListener
+    {
+        public void OnImageSelected (Integer imageId);
+    }
 
     @Nullable
     @Override
@@ -35,6 +40,18 @@ public class GridFragment extends Fragment
 
         // Attach the adapter
         gridView.setAdapter (gridAdapter);
+
+        // set the click listener
+        gridView.setOnItemClickListener (new OnItemClickListener ()
+        {
+            @Override
+            public void onItemClick (AdapterView<?> parent, View view, int position, long id)
+            {
+                // Invoke the callback implemented in MainActivity
+                listener = (OnImageSelectedListener) getActivity ();
+                listener.OnImageSelected (new Integer (position));
+            }
+        });
 
         return rootView;
     }
