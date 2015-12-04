@@ -4,14 +4,29 @@ package com.hayseed.mymovieapp;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
+
+import com.hayseed.mymovieapp.utils.URLConnection;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
@@ -22,10 +37,12 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
 
+        new DiscoverMovies ().execute ("popularity.desc");
+
         Toolbar theToolBar = (Toolbar) findViewById (R.id.main_toolbar);
         setSupportActionBar (theToolBar);
 
-        // The fragment
+        // The fragment (to display the posters)
         GridFragment gridFragment = new GridFragment ();
 
         // Get the fragment manager
@@ -102,5 +119,88 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         getSupportActionBar ().setDisplayShowTitleEnabled (true);
         getSupportActionBar ().setTitle ("MyMovieApp");
         getSupportActionBar ().setDisplayOptions (0);
+    }
+
+    private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
+    {
+        private final String TAG = "DiscoverMovies";
+
+        private ArrayList<MovieDB> movieList;
+
+        @Override
+        protected ArrayList<MovieDB> doInBackground (String... params)
+        {
+            // get the moviedb key
+            String movieKey = null;
+
+            try
+            {
+                InputStream in = getAssets ().open ("parms.txt");
+                Properties p = new Properties ();
+                p.load (in);
+                movieKey = p.getProperty ("themoviedb");
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace ();
+                return null;
+            }
+
+            // build the uri
+
+            Uri.Builder uri = new Uri.Builder ();
+            uri.scheme ("http").authority ("api.themoviedb.org").appendPath ("3")
+                    .appendPath ("discover")
+                    .appendPath ("movie")
+                    .appendQueryParameter ("sort_by", params[0])
+                    .appendQueryParameter ("api_key", movieKey);
+
+            Log.d (TAG, "uri=" + uri.toString ());
+
+            // issue the request and retrieve the response
+            URLConnection.sendRequest (uri.toString ());
+            String response = URLConnection.getResponse ();
+            URLConnection.closeConnection ();
+
+            // response into a json object
+
+            if (response == null) return null;
+
+            try
+            {
+                JSONObject o = new JSONObject (response);
+                JSONArray array = o.getJSONArray ("results");
+
+                movieList = new ArrayList<> ();
+
+                for (int i = 0; i < array.length (); i++)
+                {
+                    JSONObject detail = array.getJSONObject (i);
+                    String id = detail.getString ("id");
+                    String poster_path = detail.getString ("poster_path");
+
+                    MovieDB movie = new MovieDB (id, poster_path);
+                    movieList.add (movie);
+
+                    Log.d (TAG, i + " " + id + " " + poster_path );
+                }
+
+                return movieList;
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace ();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute (ArrayList<MovieDB> movieDBs)
+        {
+            super.onPostExecute (movieDBs);
+
+
+        }
     }
 }
