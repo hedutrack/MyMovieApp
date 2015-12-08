@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
+    private ArrayList<MovieDB> movieList;
 
     @Override
     protected void onCreate (Bundle savedInstanceState)
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     }
 
     /**
-     * Callback from GridFragment
+     * Callback from GridFragment, and represents the movie image selected
      * <p/>
      * See <a href="http://developer.android.com/guide/components/fragments.html">Android Fragments</a>
      *
@@ -92,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     public void OnImageSelected (Integer pos)
     {
         MovieDetailFragment detailFragment = new MovieDetailFragment ();
+
+        detailFragment.setMovieDB (movieList.get (pos));
 
         Bundle b = new Bundle ();
         b.putInt ("Position", pos);
@@ -124,8 +127,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
     {
         private final String TAG = "DiscoverMovies";
-
-        private ArrayList<MovieDB> movieList;
 
         @Override
         protected ArrayList<MovieDB> doInBackground (String... params)
@@ -184,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
                     movie.setOverview (detail.getString ("overview"));
                     movie.setVoteAverage (detail.getString ("vote_average"));
                     movie.setReleaseDate (detail.getString ("release_date"));
-                    
+
                     movieList.add (movie);
 
                     Log.d (TAG, i + " " + id + " " + poster_path );

@@ -4,16 +4,23 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 /**
  *
@@ -21,6 +28,7 @@ import android.widget.Toast;
 public class MovieDetailFragment extends Fragment
 {
     private Integer selectedItem;
+    private MovieDB theMovieDetails;
 
     public interface OnMovieDetailBackListener
     {
@@ -28,7 +36,8 @@ public class MovieDetailFragment extends Fragment
     }
 
     public MovieDetailFragment ()
-    {}
+    {
+    }
 
     @Override
     public void onCreate (Bundle savedInstanceState)
@@ -54,6 +63,28 @@ public class MovieDetailFragment extends Fragment
         Integer pos = getArguments ().getInt ("Position");
         Toast.makeText (container.getContext (), String.valueOf (pos), Toast.LENGTH_LONG).show ();
 
+        TextView tvTextTitle       = (TextView) rootView.findViewById (R.id.textTitle);
+        TextView tvTextRating      = (TextView) rootView.findViewById (R.id.textRating);
+        TextView tvTextReleaseDate = (TextView) rootView.findViewById (R.id.textReleaseDate);
+        TextView tvTextPlot        = (TextView) rootView.findViewById (R.id.textPlot);
+
+        tvTextTitle.setText (theMovieDetails.getOriginalTitle ());
+        tvTextRating.setText (theMovieDetails.getVoteAverage ());
+        tvTextReleaseDate.setText (theMovieDetails.getReleaseDate ());
+        tvTextPlot.setText (theMovieDetails.getOverview ());
+
+        String posterPath = theMovieDetails.getPosterPath ();
+        Uri.Builder uri = new Uri.Builder ();
+        uri.scheme ("http").authority ("image.tmdb.org")
+                .appendPath ("t")
+                .appendPath ("p")
+                .appendPath ("w185")
+                .appendEncodedPath (posterPath);
+
+        ImageView imageView = (ImageView) rootView.findViewById (R.id.imageView);
+        Context   c = rootView.getContext ();
+        Picasso.with (c).load (uri.toString ()).into (imageView);
+
         return rootView;
     }
 
@@ -65,6 +96,7 @@ public class MovieDetailFragment extends Fragment
 
     /**
      * Handles back button
+     *
      * @param item
      * @return
      */
@@ -79,5 +111,11 @@ public class MovieDetailFragment extends Fragment
         }
 
         return super.onOptionsItemSelected (item);
+    }
+
+    // TODO fix this poor implementation of data passing
+    public void setMovieDB (MovieDB theMovie)
+    {
+        theMovieDetails = theMovie;
     }
 }
