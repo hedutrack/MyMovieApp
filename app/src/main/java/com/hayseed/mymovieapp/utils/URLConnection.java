@@ -34,17 +34,18 @@ public class URLConnection
         catch (MalformedURLException e)
         {
             e.printStackTrace ();
+            throw new RuntimeException ();
         }
         catch (ProtocolException e)
         {
             e.printStackTrace ();
+            throw new RuntimeException ();
         }
         catch (IOException e)
         {
             e.printStackTrace ();
+            throw new RuntimeException ();
         }
-
-        urlConnection = null;
     }
 
     public static String getResponse ()

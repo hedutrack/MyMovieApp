@@ -43,11 +43,11 @@ public class MovieDetailFragment extends Fragment
     public void onCreate (Bundle savedInstanceState)
     {
         super.onCreate (savedInstanceState);
-        setHasOptionsMenu (true);
+        //setHasOptionsMenu (true);
 
-        ((AppCompatActivity) getActivity ()).getSupportActionBar ().setDisplayOptions (android.support.v7.app.ActionBar.DISPLAY_HOME_AS_UP);
-        ((AppCompatActivity) getActivity ()).getSupportActionBar ().setTitle ("Movie Details");
-        ((AppCompatActivity) getActivity ()).getSupportActionBar ().setDisplayShowTitleEnabled (true);
+       // ((AppCompatActivity) getActivity ()).getSupportActionBar ().setDisplayOptions (android.support.v7.app.ActionBar.DISPLAY_HOME_AS_UP);
+       // ((AppCompatActivity) getActivity ()).getSupportActionBar ().setTitle ("Movie Details");
+       // ((AppCompatActivity) getActivity ()).getSupportActionBar ().setDisplayShowTitleEnabled (true);
 
     }
 
@@ -61,7 +61,6 @@ public class MovieDetailFragment extends Fragment
         View rootView = inflater.inflate (R.layout.fragment_detail, container, false);
 
         Integer pos = getArguments ().getInt ("Position");
-        Toast.makeText (container.getContext (), String.valueOf (pos), Toast.LENGTH_LONG).show ();
 
         TextView tvTextTitle       = (TextView) rootView.findViewById (R.id.textTitle);
         TextView tvTextRating      = (TextView) rootView.findViewById (R.id.textRating);

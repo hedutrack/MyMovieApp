@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
         new DiscoverMovies ().execute ("popularity.desc");
 
-        Toolbar theToolBar = (Toolbar) findViewById (R.id.main_toolbar);
-        setSupportActionBar (theToolBar);
+        //Toolbar theToolBar = (Toolbar) findViewById (R.id.main_toolbar);
+        //setSupportActionBar (theToolBar);
 
 /*        // The fragment (to display the posters)
         GridFragment gridFragment = new GridFragment ();
@@ -84,7 +84,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     }
 
     /**
-     * Callback from GridFragment, and represents the movie image selected
+     * Callback from GridFragment, and represents the movie image selected.  This will
+     * transition to a detail view of the movie
+     *
      * <p/>
      * See <a href="http://developer.android.com/guide/components/fragments.html">Android Fragments</a>
      *
@@ -106,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
         FragmentTransaction transaction = fragmentManager.beginTransaction ();
         transaction.replace (R.id.content_frame, detailFragment);
+        //transaction.add (detailFragment, "detail");
+        //transaction.add (R.id.content_frame, detailFragment);
+
         transaction.addToBackStack (null);
         transaction.commit ();
 
@@ -119,9 +124,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     {
         FragmentManager fragmentManager = getFragmentManager ();
         fragmentManager.popBackStack ();
-        getSupportActionBar ().setDisplayShowTitleEnabled (true);
-        getSupportActionBar ().setTitle ("MyMovieApp");
-        getSupportActionBar ().setDisplayOptions (0);
+        //getSupportActionBar ().setDisplayShowTitleEnabled (true);
+        //getSupportActionBar ().setTitle ("MyMovieApp");
+        //getSupportActionBar ().setDisplayOptions (0);
     }
 
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
@@ -218,7 +223,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             // case, the container is defined in activity_main.xml.  There is a method for not
             // associating the fragment to a container, but I'm not sure of the meaning of that.
             fragmentTransaction.add (R.id.content_frame, gridFragment);
-            //fragmentTransaction.addToBackStack (null);
+
+            fragmentTransaction.addToBackStack (null);
             fragmentTransaction.commit ();
 
         }
