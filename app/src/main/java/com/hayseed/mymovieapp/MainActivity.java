@@ -80,6 +80,11 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             return true;
         }
 
+        if (id == android.R.id.home)
+        {
+            System.out.println ();
+        }
+
         return super.onOptionsItemSelected (item);
     }
 
