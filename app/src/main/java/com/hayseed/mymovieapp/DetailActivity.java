@@ -14,5 +14,6 @@ public class DetailActivity extends AppCompatActivity
         super.onCreate (savedInstanceState);
 
         // create the detail fragment here
+        // more
     }
 }
