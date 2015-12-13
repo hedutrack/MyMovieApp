@@ -1,6 +1,17 @@
 <resources>
     <string name="app_name">MyMovieApp</string>
-
+    <string name="title_Settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="pref_sort_key">Sort</string>
+    <string name="pref_sort_label">Movie Sort Order</string>
+    <string name="pref_sort_default">Most Popular</string>
+    <string-array name="pref_Sort">
+        <item>Most Popular</item>
+        <item>Highest Rated</item>
+    </string-array>
+    <string-array name="pref_Sort_Values">
+        <item>MostPopular</item>
+        <item>HighestRated</item>
+    </string-array>
 </resources>

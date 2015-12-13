@@ -6,7 +6,7 @@
 
     <ImageView
         android:id="@+id/fragment_main_poster"
-        android:layout_width="50dp"
-        android:layout_height="50dp"/>
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"/>
 
 </LinearLayout>

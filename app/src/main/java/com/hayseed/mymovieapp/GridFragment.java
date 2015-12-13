@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -17,6 +18,8 @@ import java.util.Arrays;
  */
 public class GridFragment extends Fragment
 {
+    ArrayList<MovieDB> movieList;
+
     private GridAdapter             gridAdapter;
     private OnImageSelectedListener listener;
 
@@ -33,7 +36,7 @@ public class GridFragment extends Fragment
         View rootView = inflater.inflate (R.layout.fragment_main, container, false);
 
         // create the adapter
-        gridAdapter = new GridAdapter (getActivity (), Arrays.asList (mThumbIds));
+        gridAdapter = new GridAdapter (getActivity (), movieList);
 
         // Get the grid view
         GridView gridView = (GridView) rootView.findViewById (R.id.gridview);
@@ -54,6 +57,13 @@ public class GridFragment extends Fragment
         });
 
         return rootView;
+    }
+
+    // TODO Temporary stub to keep things moving along.
+    // TODO Not the best way of passing data to a fragment.
+    public void setAdapterData (ArrayList<MovieDB> list)
+    {
+        movieList = list;
     }
 
     // references to our images
