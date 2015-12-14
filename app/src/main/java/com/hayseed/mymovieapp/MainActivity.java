@@ -40,11 +40,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
 
-        progress = new ProgressDialog (this);
-        progress.setTitle ("Retrieving movies");
-        progress.setMessage ("Wait");
-        progress.show ();
-
         new DiscoverMovies ().execute ("popularity.desc");
 
         //Toolbar theToolBar = (Toolbar) findViewById (R.id.main_toolbar);
@@ -148,6 +143,17 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
     {
         private final String TAG = "DiscoverMovies";
+
+        @Override
+        protected void onPreExecute ()
+        {
+            super.onPreExecute ();
+
+            progress = new ProgressDialog (MainActivity.this);
+            progress.setTitle ("Retrieving movies");
+            progress.setMessage ("Wait");
+            progress.show ();
+        }
 
         @Override
         protected ArrayList<MovieDB> doInBackground (String... params)
