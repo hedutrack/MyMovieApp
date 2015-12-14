@@ -220,6 +220,12 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         {
             super.onPostExecute (movieDBs);
 
+            if (movieDBs == null)
+            {
+                Toast.makeText (getApplicationContext (), "No movie posters", Toast.LENGTH_LONG).show ();
+                return;
+            }
+            
             // The fragment (to display the posters)
             GridFragment gridFragment = new GridFragment ();
             gridFragment.setAdapterData (movieDBs);
