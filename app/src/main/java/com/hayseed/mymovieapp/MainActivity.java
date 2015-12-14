@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
      */
     public void OnImageSelected (Integer pos)
     {
-        MovieDetailFragment detailFragment = new MovieDetailFragment ();
+/*        MovieDetailFragment detailFragment = new MovieDetailFragment ();
 
         detailFragment.setMovieDB (movieList.get (pos));
 
@@ -112,9 +112,18 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         //transaction.add (R.id.content_frame, detailFragment);
 
         transaction.addToBackStack (null);
-        transaction.commit ();
+        transaction.commit ();*/
 
+        Intent intent = new Intent (this, DetailActivity.class);
 
+        MovieDB movieDB = movieList.get (pos);
+        intent.putExtra ("posterPath", movieDB.getPosterPath ());
+        intent.putExtra ("originalTitle", movieDB.getOriginalTitle ());
+        intent.putExtra ("overview", movieDB.getOverview ());
+        intent.putExtra ("voteAverage", movieDB.getVoteAverage ());
+        intent.putExtra ("releaseDate", movieDB.getReleaseDate ());
+
+        startActivity (intent);
     }
 
     /**

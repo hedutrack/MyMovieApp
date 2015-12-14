@@ -60,19 +60,18 @@ public class MovieDetailFragment extends Fragment
     {
         View rootView = inflater.inflate (R.layout.fragment_detail, container, false);
 
-        Integer pos = getArguments ().getInt ("Position");
+        String posterPath = getArguments ().getString ("posterPath");
 
         TextView tvTextTitle       = (TextView) rootView.findViewById (R.id.textTitle);
         TextView tvTextRating      = (TextView) rootView.findViewById (R.id.textRating);
         TextView tvTextReleaseDate = (TextView) rootView.findViewById (R.id.textReleaseDate);
         TextView tvTextPlot        = (TextView) rootView.findViewById (R.id.textPlot);
 
-        tvTextTitle.setText (theMovieDetails.getOriginalTitle ());
-        tvTextRating.setText (theMovieDetails.getVoteAverage ());
-        tvTextReleaseDate.setText (theMovieDetails.getReleaseDate ());
-        tvTextPlot.setText (theMovieDetails.getOverview ());
+        tvTextTitle.setText (getArguments ().getString ("originalTitle"));
+        tvTextRating.setText (getArguments ().getString ("voteAverage"));
+        tvTextReleaseDate.setText (getArguments ().getString ("releaseDate"));
+        tvTextPlot.setText (getArguments ().getString ("overview"));
 
-        String posterPath = theMovieDetails.getPosterPath ();
         Uri.Builder uri = new Uri.Builder ();
         uri.scheme ("http").authority ("image.tmdb.org")
                 .appendPath ("t")
