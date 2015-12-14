@@ -3,6 +3,7 @@ package com.hayseed.mymovieapp;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,12 +32,18 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
     private ArrayList<MovieDB> movieList;
+    private ProgressDialog progress;
 
     @Override
     protected void onCreate (Bundle savedInstanceState)
     {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
+
+        progress = new ProgressDialog (this);
+        progress.setTitle ("Retrieving movies");
+        progress.setMessage ("Wait");
+        progress.show ();
 
         new DiscoverMovies ().execute ("popularity.desc");
 
@@ -220,12 +227,15 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         {
             super.onPostExecute (movieDBs);
 
+
             if (movieDBs == null)
             {
+                progress.dismiss ();
+
                 Toast.makeText (getApplicationContext (), "No movie posters", Toast.LENGTH_LONG).show ();
                 return;
             }
-            
+
             // The fragment (to display the posters)
             GridFragment gridFragment = new GridFragment ();
             gridFragment.setAdapterData (movieDBs);
@@ -241,6 +251,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             fragmentTransaction.addToBackStack (null);
             fragmentTransaction.commit ();
+
+            progress.dismiss ();
 
         }
     }
