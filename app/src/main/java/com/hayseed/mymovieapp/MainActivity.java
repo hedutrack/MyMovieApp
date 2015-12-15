@@ -3,6 +3,7 @@ package com.hayseed.mymovieapp;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
     private ArrayList<MovieDB> movieList;
+    private ProgressDialog progress;
 
     @Override
     protected void onCreate (Bundle savedInstanceState)
@@ -79,12 +81,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             startActivity (new Intent (this, SettingsActivity.class));
             return true;
         }
-
-        if (id == android.R.id.home)
-        {
-            System.out.println ();
-        }
-
+        
         return super.onOptionsItemSelected (item);
     }
 
@@ -99,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
      */
     public void OnImageSelected (Integer pos)
     {
-        MovieDetailFragment detailFragment = new MovieDetailFragment ();
+/*        MovieDetailFragment detailFragment = new MovieDetailFragment ();
 
         detailFragment.setMovieDB (movieList.get (pos));
 
@@ -117,9 +114,18 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         //transaction.add (R.id.content_frame, detailFragment);
 
         transaction.addToBackStack (null);
-        transaction.commit ();
+        transaction.commit ();*/
 
+        Intent intent = new Intent (this, DetailActivity.class);
 
+        MovieDB movieDB = movieList.get (pos);
+        intent.putExtra ("posterPath", movieDB.getPosterPath ());
+        intent.putExtra ("originalTitle", movieDB.getOriginalTitle ());
+        intent.putExtra ("overview", movieDB.getOverview ());
+        intent.putExtra ("voteAverage", movieDB.getVoteAverage ());
+        intent.putExtra ("releaseDate", movieDB.getReleaseDate ());
+
+        startActivity (intent);
     }
 
     /**
@@ -137,6 +143,17 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
     {
         private final String TAG = "DiscoverMovies";
+
+        @Override
+        protected void onPreExecute ()
+        {
+            super.onPreExecute ();
+
+            progress = new ProgressDialog (MainActivity.this);
+            progress.setTitle ("Retrieving movies");
+            progress.setMessage ("Wait");
+            progress.show ();
+        }
 
         @Override
         protected ArrayList<MovieDB> doInBackground (String... params)
@@ -216,6 +233,15 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         {
             super.onPostExecute (movieDBs);
 
+
+            if (movieDBs == null)
+            {
+                progress.dismiss ();
+
+                Toast.makeText (getApplicationContext (), "No movie posters", Toast.LENGTH_LONG).show ();
+                return;
+            }
+
             // The fragment (to display the posters)
             GridFragment gridFragment = new GridFragment ();
             gridFragment.setAdapterData (movieDBs);
@@ -231,6 +257,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             fragmentTransaction.addToBackStack (null);
             fragmentTransaction.commit ();
+
+            progress.dismiss ();
 
         }
     }

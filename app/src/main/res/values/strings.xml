@@ -6,6 +6,7 @@
     <string name="pref_sort_key">Sort</string>
     <string name="pref_sort_label">Movie Sort Order</string>
     <string name="pref_sort_default">Most Popular</string>
+    <string name="title_activity_detail">Movie Details</string>
     <string-array name="pref_Sort">
         <item>Most Popular</item>
         <item>Highest Rated</item>
