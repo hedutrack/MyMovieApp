@@ -19,7 +19,7 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
                 .replace (android.R.id.content, new SettingsFragment ())
                 .commit ();
 
-        bindPreferenceSummaryToValue (findPreference (getString (R.string.pref_location_key)));
+        bindPreferenceSummaryToValue (findPreference (getString (R.string.pref_sort_key)));
 
     }
 
@@ -33,5 +33,16 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         return true;
     }
 
+    private void bindPreferenceSummaryToValue (Preference preference)
+    {
+        // Set the listener to watch for value changes.
+        preference.setOnPreferenceChangeListener (this);
 
+        // Trigger the listener immediately with the preference's
+        // current value.
+        onPreferenceChange (preference,
+                PreferenceManager
+                        .getDefaultSharedPreferences (preference.getContext ())
+                        .getString (preference.getKey (), ""));
+    }
 }
