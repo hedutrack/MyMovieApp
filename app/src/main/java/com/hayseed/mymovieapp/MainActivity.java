@@ -5,8 +5,10 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,7 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
+public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener, SettingsFragment.OnSettingsChangedListener
 {
     private ArrayList<MovieDB> movieList;
     private ProgressDialog progress;
@@ -39,25 +41,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
-
-        new DiscoverMovies ().execute ("popularity.desc");
-
-        //Toolbar theToolBar = (Toolbar) findViewById (R.id.main_toolbar);
-        //setSupportActionBar (theToolBar);
-
-/*        // The fragment (to display the posters)
-        GridFragment gridFragment = new GridFragment ();
-
-        // Get the fragment manager
-        FragmentManager     fragmentManger      = getFragmentManager ();
-        FragmentTransaction fragmentTransaction = fragmentManger.beginTransaction ();
-
-        // Add the fragment.  The magic lies in associating the fragment to a container. In this
-        // case, the container is defined in activity_main.xml.  There is a method for not
-        // associating the fragment to a container, but I'm not sure of the meaning of that.
-        fragmentTransaction.add (R.id.content_frame, gridFragment);
-        //fragmentTransaction.addToBackStack (null);
-        fragmentTransaction.commit ();*/
     }
 
     @Override
@@ -96,26 +79,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
      */
     public void OnImageSelected (Integer pos)
     {
-/*        MovieDetailFragment detailFragment = new MovieDetailFragment ();
-
-        detailFragment.setMovieDB (movieList.get (pos));
-
-        Bundle b = new Bundle ();
-        b.putInt ("Position", pos);
-
-        detailFragment.setArguments (b);
-
-        //Toast.makeText (this, String.valueOf (pos), Toast.LENGTH_LONG).show ();
-        FragmentManager fragmentManager = getFragmentManager ();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction ();
-        transaction.replace (R.id.content_frame, detailFragment);
-        //transaction.add (detailFragment, "detail");
-        //transaction.add (R.id.content_frame, detailFragment);
-
-        transaction.addToBackStack (null);
-        transaction.commit ();*/
-
         Intent intent = new Intent (this, DetailActivity.class);
 
         MovieDB movieDB = movieList.get (pos);
@@ -135,9 +98,28 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     {
         FragmentManager fragmentManager = getFragmentManager ();
         fragmentManager.popBackStack ();
-        //getSupportActionBar ().setDisplayShowTitleEnabled (true);
-        //getSupportActionBar ().setTitle ("MyMovieApp");
-        //getSupportActionBar ().setDisplayOptions (0);
+    }
+
+    public void OnSettingsChanged (Integer imageId)
+    {
+        new DiscoverMovies ().execute ("popularity.desc");
+    }
+
+    @Override
+    protected void onResume ()
+    {
+        super.onResume ();
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
+        String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
+
+        new DiscoverMovies ().execute (sortOrder);
+    }
+
+    @Override
+    public void OnSettingsSelected (String key)
+    {
+        String s = key;
     }
 
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
@@ -233,11 +215,10 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         {
             super.onPostExecute (movieDBs);
 
+            progress.dismiss ();
 
             if (movieDBs == null)
             {
-                progress.dismiss ();
-
                 Toast.makeText (getApplicationContext (), "No movie posters", Toast.LENGTH_LONG).show ();
                 return;
             }
@@ -257,9 +238,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             fragmentTransaction.addToBackStack (null);
             fragmentTransaction.commit ();
-
-            progress.dismiss ();
-
         }
     }
 }

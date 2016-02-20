@@ -1,5 +1,6 @@
 package com.hayseed.mymovieapp;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -8,8 +9,21 @@ import android.preference.PreferenceManager;
 /**
  *
  */
-public class SettingsFragment extends PreferenceFragment
+public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener
 {
+    public interface OnSettingsChangedListener
+    {
+        public void OnSettingsSelected (String key);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged (SharedPreferences sharedPreferences, String key)
+    {
+        //OnSettingsChangedListener listener = (OnSettingsChangedListener) getActivity ();
+
+        //listener.OnSettingsSelected (key);
+    }
+
     @Override
     public void onCreate (Bundle savedInstanceState)
     {
@@ -24,30 +38,18 @@ public class SettingsFragment extends PreferenceFragment
     }
 
     @Override
-    public boolean onPreferenceChange (Preference preference, Object value)
+    public void onPause ()
     {
-        String stringValue = value.toString ();
+        super.onPause ();
 
-        preference.setSummary (stringValue);
-
-        return true;
+        getPreferenceScreen ().getSharedPreferences ().unregisterOnSharedPreferenceChangeListener (this);
     }
 
-    /**
-     * Attaches a listener so the summary is always updated with the preference value.
-     * Also fires the listener once, to initialize the summary (so it shows up before the value
-     * is changed.)
-     */
-    private void bindPreferenceSummaryToValue (Preference preference)
+    @Override
+    public void onResume ()
     {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener (this);
+        super.onResume ();
 
-        // Trigger the listener immediately with the preference's
-        // current value.
-        onPreferenceChange (preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences (preference.getContext ())
-                        .getString (preference.getKey (), ""));
+        getPreferenceScreen ().getSharedPreferences ().registerOnSharedPreferenceChangeListener (this);
     }
 }

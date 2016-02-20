@@ -43,12 +43,6 @@ public class MovieDetailFragment extends Fragment
     public void onCreate (Bundle savedInstanceState)
     {
         super.onCreate (savedInstanceState);
-        //setHasOptionsMenu (true);
-
-       // ((AppCompatActivity) getActivity ()).getSupportActionBar ().setDisplayOptions (android.support.v7.app.ActionBar.DISPLAY_HOME_AS_UP);
-       // ((AppCompatActivity) getActivity ()).getSupportActionBar ().setTitle ("Movie Details");
-       // ((AppCompatActivity) getActivity ()).getSupportActionBar ().setDisplayShowTitleEnabled (true);
-
     }
 
     @Nullable
