@@ -2,7 +2,6 @@ package com.hayseed.mymovieapp;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +10,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  *
@@ -27,8 +25,7 @@ public class GridFragment extends Fragment
     {
         public void OnImageSelected (Integer imageId);
     }
-
-    @Nullable
+    
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
