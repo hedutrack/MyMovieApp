@@ -53,7 +53,6 @@ public class GridAdapter extends ArrayAdapter
         ImageView imageView = (ImageView) convertView.findViewById (R.id.fragment_main_poster);
         Context c = parent.getContext ();
         Picasso.with (c).load (uri.toString ()).into (imageView);
-        //imageView.setImageResource (referenceId);
 
         return convertView;
     }

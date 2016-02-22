@@ -27,7 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener, SettingsFragment.OnSettingsChangedListener
+public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
     private ArrayList<MovieDB> movieList;
     private ProgressDialog progress;
@@ -96,11 +96,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         fragmentManager.popBackStack ();
     }
 
-    public void OnSettingsChanged (Integer imageId)
-    {
-        new DiscoverMovies ().execute ("popularity.desc");
-    }
-
     @Override
     protected void onResume ()
     {
@@ -110,12 +105,6 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
 
         new DiscoverMovies ().execute (sortOrder);
-    }
-
-    @Override
-    public void OnSettingsSelected (String key)
-    {
-        String s = key;
     }
 
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>

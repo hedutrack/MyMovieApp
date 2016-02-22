@@ -34,14 +34,9 @@ public class DetailActivity extends AppCompatActivity
             MovieDetailFragment detailFragment = new MovieDetailFragment ();
             detailFragment.setArguments (b);
 
-            //Toast.makeText (this, String.valueOf (pos), Toast.LENGTH_LONG).show ();
             FragmentManager fragmentManager = getFragmentManager ();
-
             FragmentTransaction transaction = fragmentManager.beginTransaction ();
             transaction.replace (R.id.content_frame, detailFragment);
-            //transaction.add (detailFragment, "detail");
-            //transaction.add (R.id.content_frame, detailFragment);
-
             transaction.addToBackStack (null);
             transaction.commit ();
         }
