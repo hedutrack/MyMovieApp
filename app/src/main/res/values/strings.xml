@@ -7,12 +7,14 @@
     <string name="pref_sort_label">Movie Sort Order</string>
     <string name="pref_sort_default">Most Popular</string>
     <string name="title_activity_detail">Movie Details</string>
+    <string name="pref_sync">Pref Sync</string>
+    <string name="pref_sync_summ">Pref Sync Summ</string>
     <string-array name="pref_Sort">
         <item>Most Popular</item>
         <item>Highest Rated</item>
     </string-array>
     <string-array name="pref_Sort_Values">
-        <item>MostPopular</item>
-        <item>HighestRated</item>
+        <item>popularity.desc</item>
+        <item>vote_average.desc</item>
     </string-array>
 </resources>
