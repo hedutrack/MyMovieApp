@@ -29,8 +29,9 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
-    private ArrayList<MovieDB> movieList;
+    private static ArrayList<MovieDB> movieList;
     private ProgressDialog progress;
+    private static String currentSortOrder = "";
 
     @Override
     protected void onCreate (Bundle savedInstanceState)
@@ -127,6 +128,11 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         {
             // get the moviedb key
             String movieKey = null;
+
+            String sortOrder = params [0];
+            if (currentSortOrder.equals (sortOrder)) return movieList;
+
+            currentSortOrder = sortOrder;
 
             try
             {

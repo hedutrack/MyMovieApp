@@ -56,6 +56,14 @@ public class GridFragment extends Fragment
         return rootView;
     }
 
+    @Override
+    public void onResume ()
+    {
+        super.onResume ();
+
+        gridAdapter.notifyDataSetChanged ();
+    }
+
     // TODO Temporary stub to keep things moving along.
     // TODO Not the best way of passing data to a fragment.
     public void setAdapterData (ArrayList<MovieDB> list)
