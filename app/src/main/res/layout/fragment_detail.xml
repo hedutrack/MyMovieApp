@@ -5,31 +5,25 @@
               android:layout_height="match_parent"
               android:weightSum="1">
 
-    <ImageView
-        android:layout_width="162dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/imageView"
-        android:layout_weight="0.31"/>
 
     <TextView
-        android:layout_width="191dp"
-        android:layout_height="wrap_content"
-        android:text="Title"
-        android:id="@+id/titleLabel"
-        android:textStyle="bold"
-        android:layout_weight="0.04"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="right"/>
-
-    <TextView
-        android:layout_width="191dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Title"
         android:id="@+id/textTitle"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/titleLabel"
+        android:gravity="center"
+        android:textSize="32sp"
+        android:paddingBottom="20dp"
         android:layout_weight="0.04"
         android:layout_gravity="right"/>
+
+    <ImageView
+        android:layout_width="162dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textTitle"
+        android:id="@+id/imageView"
+        android:layout_weight="0.31"/>
 
     <TextView
         android:layout_width="191dp"
@@ -79,5 +73,15 @@
         android:text="plot"
         android:id="@+id/textPlot"
         android:layout_below="@+id/textReleaseDate"
+        android:paddingTop="20dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="10dp"
         android:layout_weight="0.31"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/textPlot"
+        android:background="@android:color/darker_gray"/>
 </RelativeLayout>
