@@ -30,6 +30,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
     private static ArrayList<MovieDB> movieList;
+    private MovieBucket bucket;
     private ProgressDialog progress;
     private static String currentSortOrder = "";
 
@@ -77,14 +78,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     public void OnImageSelected (Integer pos)
     {
         Intent intent = new Intent (this, DetailActivity.class);
-
-        MovieDB movieDB = movieList.get (pos);
-        intent.putExtra ("posterPath", movieDB.getPosterPath ());
-        intent.putExtra ("originalTitle", movieDB.getOriginalTitle ());
-        intent.putExtra ("overview", movieDB.getOverview ());
-        intent.putExtra ("voteAverage", movieDB.getVoteAverage ());
-        intent.putExtra ("releaseDate", movieDB.getReleaseDate ());
-
+        intent.putExtra ("moviePos", pos);
         startActivity (intent);
     }
 
@@ -213,6 +207,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
                 Toast.makeText (getApplicationContext (), "No movie posters", Toast.LENGTH_LONG).show ();
                 return;
             }
+
+            MovieBucket bucket = MovieBucket.getInstance ();
+            bucket.setMovies (movieDBs);
 
             // The fragment (to display the posters)
             GridFragment gridFragment = new GridFragment ();
