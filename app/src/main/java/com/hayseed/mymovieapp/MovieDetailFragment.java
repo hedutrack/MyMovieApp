@@ -3,6 +3,7 @@ package com.hayseed.mymovieapp;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -16,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.hayseed.mymovieapp.utils.URLConnection;
@@ -37,11 +40,9 @@ public class MovieDetailFragment extends Fragment
     private static final String Reviews = "reviews";
     private static final String Videos = "videos";
 
-    private Button  btnTrailer;
-    private Integer selectedItem;
-    private int moviePos;
+    private Button btnFavs;
+    private Button  btnReviews;
     private MovieDB theMovieDetails;
-    private String youTubeKey;
 
     public interface OnMovieDetailBackListener
     {
@@ -72,26 +73,48 @@ public class MovieDetailFragment extends Fragment
     {
         View rootView = inflater.inflate (R.layout.fragment_detail, container, false);
 
-
+        int moviePos = getArguments ().getInt ("moviePos");
+        final MovieBucket bucket = MovieBucket.getInstance (getActivity ());
+        theMovieDetails = bucket.getMovie (moviePos);
+        if (theMovieDetails == null) return rootView;
 
         TextView tvTextTitle       = (TextView) rootView.findViewById (R.id.textTitle);
         TextView tvTextRating      = (TextView) rootView.findViewById (R.id.textRating);
         TextView tvTextReleaseDate = (TextView) rootView.findViewById (R.id.textReleaseDate);
         TextView tvTextPlot        = (TextView) rootView.findViewById (R.id.textPlot);
 
-        btnTrailer          = (Button)   rootView.findViewById (R.id.btnTrailer);
-        btnTrailer.setEnabled (false);
+        btnReviews = (Button) rootView.findViewById (R.id.btnReviews);
+        btnReviews.setEnabled (false);
 
-        int moviePos = getArguments ().getInt ("moviePos");
-        MovieBucket bucket = MovieBucket.getInstance ();
-        MovieDB movieDB = bucket.getMovie (moviePos);
+        btnFavs = (Button) rootView.findViewById (R.id.btnFavs);
+        if (bucket.isFav (theMovieDetails.getId ()))
+        {
+            btnFavs.setText (Defines.UnsetFav);
+        }
+        else
+        {
+            btnFavs.setText (Defines.SetFav);
+        }
+        btnFavs.setOnClickListener (new View.OnClickListener ()
+        {
+            @Override
+            public void onClick (View v)
+            {
+                bucket.toggleFavs (theMovieDetails);
+                String s = (String) btnFavs.getText ();
+                if (s.equals (Defines.SetFav)) s = Defines.UnsetFav;
+                else s = Defines.SetFav;
 
-        tvTextTitle.setText (movieDB.getOriginalTitle ());
-        tvTextRating.setText (movieDB.getVoteAverage ());
-        tvTextReleaseDate.setText (movieDB.getReleaseDate ());
-        tvTextPlot.setText (movieDB.getOverview ());
+                btnFavs.setText (s);
+            }
+        });
 
-        String posterPath = movieDB.getPosterPath ();
+        tvTextTitle.setText (theMovieDetails.getOriginalTitle ());
+        tvTextRating.setText (theMovieDetails.getVoteAverage ());
+        tvTextReleaseDate.setText (theMovieDetails.getReleaseDate ());
+        tvTextPlot.setText (theMovieDetails.getOverview ());
+
+        String posterPath = theMovieDetails.getPosterPath ();
 
         Uri.Builder uri = new Uri.Builder ();
         uri.scheme ("http").authority ("image.tmdb.org")
@@ -104,22 +127,9 @@ public class MovieDetailFragment extends Fragment
         Context c = rootView.getContext ();
         Picasso.with (c).load (uri.toString ()).into (imageView);
 
-        new MovieArtifacts ().execute (movieDB.getId (), Videos);
-        new MovieArtifacts ().execute (movieDB.getId (), Reviews);
+        new MovieArtifacts ().execute (theMovieDetails.getId (), Videos);
+        new MovieArtifacts ().execute (theMovieDetails.getId (), Reviews);
 
-        btnTrailer.setOnClickListener (new View.OnClickListener ()
-        {
-            @Override
-            public void onClick (View v)
-            {
-                Uri.Builder uri = new Uri.Builder ();
-                uri.scheme ("http").authority ("youtube.com")
-                        .appendPath ("watch")
-                        .appendQueryParameter ("v", youTubeKey);
-
-                startActivity (new Intent (Intent.ACTION_VIEW, Uri.parse (uri.toString ())));
-            }
-        });
         return rootView;
     }
 
@@ -148,22 +158,34 @@ public class MovieDetailFragment extends Fragment
         return super.onOptionsItemSelected (item);
     }
 
+    /*
     // TODO fix this poor implementation of data passing
     public void setMovieDB (MovieDB theMovie)
     {
         theMovieDetails = theMovie;
     }
+*/
 
-    private class MovieArtifacts extends AsyncTask<String, Void, String>
+    private class MovieArtifacts extends AsyncTask<String, Void, JSONArray>
     {
         private final String TAG = "MovieArtifacts";
 
         private String artifact;
 
         @Override
-        protected String doInBackground (String... params)
+        protected JSONArray doInBackground (String... params)
         {
             artifact = params [1];
+
+            if (artifact.equals (Reviews))
+            {
+                if (theMovieDetails.reviewCount () > 0) return theMovieDetails.getReviews ();
+            }
+
+            if (artifact.equals (Videos))
+            {
+                if (theMovieDetails.trailerCount () > 0) return theMovieDetails.getTrailers ();
+            }
 
             String movieKey = null;
 
@@ -199,11 +221,22 @@ public class MovieDetailFragment extends Fragment
                 return null;
             }
 
-            return response;
+            try
+            {
+                JSONObject o = new JSONObject (response);
+                JSONArray array = o.getJSONArray ("results");
+                return array;
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace ();
+            }
+
+            return null;
         }
 
         @Override
-        protected void onPostExecute (String response)
+        protected void onPostExecute (JSONArray response)
         {
             super.onPostExecute (response);
 
@@ -211,54 +244,78 @@ public class MovieDetailFragment extends Fragment
 
             if (artifact.equals (Reviews))
             {
-                Log.d (TAG, "Review response " + response);
-                return;
-            }
-
-            JSONObject o = null;
-            JSONArray array = null;
-
-            try
-            {
-                o = new JSONObject (response);
-                array = o.getJSONArray ("results");
-
-                // TODO handle more than one trailer
-
-                o = array.getJSONObject (0);
-                youTubeKey = o.getString ("key");
-            }
-            catch (JSONException e)
-            {
-                return;
-            }
-
-            if (artifact.equals (Reviews))
-            {
-                processReviewJSON (array);
+                processReviewJSON (response);
                 return;
             }
 
             if (artifact.equals (Videos))
             {
-                Log.d (TAG, "Trailer response " + response);
-                processTrailerJSON (array);
+                processTrailerJSON (response);
                 return;
             }
         }
 
         private void processReviewJSON (JSONArray array)
         {
+            Log.d (TAG, "Review response " + array);
 
+            theMovieDetails.setReviews (array);
+
+            int count = array.length ();
+            String s = Integer.toString (count) + " reviews";
+            btnReviews.setText (s);
+            btnReviews.setEnabled (true);
         }
 
         private void processTrailerJSON (JSONArray array)
         {
+            Log.d (TAG, "Trailer response " + array);
+
+            theMovieDetails.setTrailers (array);
+
+            View.OnClickListener listener = new View.OnClickListener ()
+            {
+                @Override
+                public void onClick (View v)
+                {
+                    String tag =  (String) v.getTag ();
+
+                    Uri.Builder uri = new Uri.Builder ();
+                    uri.scheme ("http").authority ("youtube.com")
+                            .appendPath ("watch")
+                            .appendQueryParameter ("v", tag);
+
+                    startActivity (new Intent (Intent.ACTION_VIEW, Uri.parse (uri.toString ())));
+                }
+            };
+
+            // Iterate through trailer response and dynamically build buttons
             try
             {
-                JSONObject o = array.getJSONObject (0);
-                youTubeKey = o.getString ("key");
-                btnTrailer.setEnabled (true);
+                RelativeLayout ll = (RelativeLayout) getView ().findViewById (R.id.fragment_detail);
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                params.addRule (RelativeLayout.BELOW, R.id.btnReviews);
+                int baseId = R.id.btnFavs;
+
+                for (int i = 0; i < array.length (); i++)
+                {
+                    JSONObject o = array.getJSONObject (i);
+                    String youTubeKey = o.getString ("key");
+                    String buttonText = o.getString ("name");
+
+                    Button button = new Button (getActivity ());
+                    button.setId (i + 1);
+                    button.setTag (youTubeKey);
+                    button.setText (buttonText);
+                    button.setEnabled (true);
+                    button.setOnClickListener (listener);
+                    button.setLayoutParams (params);
+
+                    ll.addView (button);
+
+                    params = new RelativeLayout.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    params.addRule (RelativeLayout.BELOW, i+1);
+                }
             }
             catch (Exception e)
             {
