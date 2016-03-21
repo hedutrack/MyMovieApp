@@ -24,11 +24,7 @@ public class DetailActivity extends AppCompatActivity
             Intent intent = getIntent ();
             if (intent != null)
             {
-                b.putCharSequence ("posterPath", intent.getStringExtra ("posterPath"));
-                b.putCharSequence ("originalTitle", intent.getStringExtra ("originalTitle"));
-                b.putCharSequence ("overview", intent.getStringExtra ("overview"));
-                b.putCharSequence ("voteAverage", intent.getStringExtra ("voteAverage"));
-                b.putCharSequence ("releaseDate", intent.getStringExtra ("releaseDate"));
+                b.putInt ("moviePos", intent.getIntExtra ("moviePos", -1));
             }
 
             MovieDetailFragment detailFragment = new MovieDetailFragment ();
@@ -40,6 +36,5 @@ public class DetailActivity extends AppCompatActivity
             transaction.addToBackStack (null);
             transaction.commit ();
         }
-
     }
 }

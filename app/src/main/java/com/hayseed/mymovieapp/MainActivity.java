@@ -30,6 +30,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
 {
     private static ArrayList<MovieDB> movieList;
+    private MovieBucket bucket;
     private ProgressDialog progress;
     private static String currentSortOrder = "";
 
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
+
+        bucket = MovieBucket.getInstance (this);
     }
 
     @Override
@@ -65,6 +68,14 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         return super.onOptionsItemSelected (item);
     }
 
+    @Override
+    protected void onPause ()
+    {
+        super.onPause ();
+
+        bucket.saveFavs ();
+    }
+
     /**
      * Callback from GridFragment, and represents the movie image selected.  This will
      * transition to a detail view of the movie
@@ -77,14 +88,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     public void OnImageSelected (Integer pos)
     {
         Intent intent = new Intent (this, DetailActivity.class);
-
-        MovieDB movieDB = movieList.get (pos);
-        intent.putExtra ("posterPath", movieDB.getPosterPath ());
-        intent.putExtra ("originalTitle", movieDB.getOriginalTitle ());
-        intent.putExtra ("overview", movieDB.getOverview ());
-        intent.putExtra ("voteAverage", movieDB.getVoteAverage ());
-        intent.putExtra ("releaseDate", movieDB.getReleaseDate ());
-
+        intent.putExtra ("moviePos", pos);
         startActivity (intent);
     }
 
@@ -134,6 +138,12 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             currentSortOrder = sortOrder;
 
+            if (currentSortOrder.equals (Defines.SortOrderFavs))
+            {
+                movieList = bucket.getFavs ();
+                return movieList;
+            }
+
             try
             {
                 InputStream in = getAssets ().open ("parms.txt");
@@ -174,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
                 movieList = new ArrayList<> ();
 
+                // TODO Building of MovieDB should be in the Bucket
                 for (int i = 0; i < array.length (); i++)
                 {
                     JSONObject detail = array.getJSONObject (i);
@@ -213,6 +224,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
                 Toast.makeText (getApplicationContext (), "No movie posters", Toast.LENGTH_LONG).show ();
                 return;
             }
+
+            MovieBucket bucket = MovieBucket.getInstance (getApplicationContext ());
+            bucket.setMovies (movieDBs);
 
             // The fragment (to display the posters)
             GridFragment gridFragment = new GridFragment ();
