@@ -140,8 +140,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             if (currentSortOrder.equals (Defines.SortOrderFavs))
             {
-                ArrayList<MovieDB> favs = bucket.getFavs ();
-                return favs;
+                movieList = bucket.getFavs ();
+                return movieList;
             }
 
             try
