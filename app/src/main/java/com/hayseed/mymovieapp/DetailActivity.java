@@ -32,7 +32,7 @@ public class DetailActivity extends AppCompatActivity
 
             FragmentManager fragmentManager = getFragmentManager ();
             FragmentTransaction transaction = fragmentManager.beginTransaction ();
-            transaction.replace (R.id.content_frame, detailFragment);
+            transaction.add (R.id.content_frame, detailFragment);
             transaction.addToBackStack (null);
             transaction.commit ();
         }

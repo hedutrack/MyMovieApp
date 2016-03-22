@@ -27,7 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
+public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener
 {
     private static ArrayList<MovieDB> movieList;
     private MovieBucket bucket;
@@ -76,9 +76,25 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         bucket.saveFavs ();
     }
 
+    @Override
+    public void onBackPressed ()
+    {
+        FragmentManager fragmentManager = getFragmentManager ();
+        int i = fragmentManager.getBackStackEntryCount ();
+
+        if (fragmentManager.getBackStackEntryCount() > 1 )
+        {
+            fragmentManager.popBackStack();
+        }
+        else
+        {
+            super.onBackPressed ();
+        }
+    }
+
     /**
      * Callback from GridFragment, and represents the movie image selected.  This will
-     * transition to a detail view of the movie
+     * transition to a detail view of the movie.
      *
      * <p/>
      * See <a href="http://developer.android.com/guide/components/fragments.html">Android Fragments</a>
@@ -87,24 +103,32 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
      */
     public void OnImageSelected (Integer pos)
     {
-        Intent intent = new Intent (this, DetailActivity.class);
-        intent.putExtra ("moviePos", pos);
-        startActivity (intent);
-    }
+        MovieDetailFragment detailFragment = new MovieDetailFragment ();
+        Bundle bundle = new Bundle ();
+        bundle.putInt (Defines.MoviePos, pos);
+        detailFragment.setArguments (bundle);
 
-    /**
-     * Callback from MovieDetailFragment.  Used to signal back button.
-     */
-    public void OnDetailBack ()
-    {
-        FragmentManager fragmentManager = getFragmentManager ();
-        fragmentManager.popBackStack ();
+        // Get the fragment manager
+        FragmentManager     fragmentManager      = getFragmentManager ();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+        fragmentTransaction.replace (R.id.content_frame, detailFragment);
+
+        fragmentTransaction.addToBackStack (null);
+        fragmentTransaction.commit ();
     }
 
     @Override
     protected void onResume ()
     {
         super.onResume ();
+
+        // This seems hokey.  The intent of this piece is to detect the resume generated
+        // when finished with the YouTube activity.  If the code is omitted, another
+        // copy of GridFragment is added to the backstack, on top of the copy already
+        // present.
+        FragmentManager fragmentManager = getFragmentManager ();
+        if (fragmentManager.getBackStackEntryCount () > 1) return;
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
         String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
@@ -239,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             // Add the fragment.  The magic lies in associating the fragment to a container. In this
             // case, the container is defined in activity_main.xml.  There is a method for not
             // associating the fragment to a container, but I'm not sure of the meaning of that.
-            fragmentTransaction.add (R.id.content_frame, gridFragment);
+            fragmentTransaction.replace (R.id.content_frame, gridFragment);
 
             fragmentTransaction.addToBackStack (null);
             fragmentTransaction.commit ();

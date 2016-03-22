@@ -2,6 +2,8 @@ package com.hayseed.mymovieapp;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -44,19 +46,8 @@ public class MovieDetailFragment extends Fragment
     private Button  btnReviews;
     private MovieDB theMovieDetails;
 
-    public interface OnMovieDetailBackListener
-    {
-        public void OnDetailBack ();
-    }
-
     public MovieDetailFragment ()
     {
-    }
-
-    @Override
-    public void onAttach (Activity activity)
-    {
-        super.onAttach (activity);
     }
 
     @Override
@@ -73,7 +64,7 @@ public class MovieDetailFragment extends Fragment
     {
         View rootView = inflater.inflate (R.layout.fragment_detail, container, false);
 
-        int moviePos = getArguments ().getInt ("moviePos");
+        final int moviePos = this.getArguments ().getInt (Defines.MoviePos);
         final MovieBucket bucket = MovieBucket.getInstance (getActivity ());
         theMovieDetails = bucket.getMovie (moviePos);
         if (theMovieDetails == null) return rootView;
@@ -85,6 +76,26 @@ public class MovieDetailFragment extends Fragment
 
         btnReviews = (Button) rootView.findViewById (R.id.btnReviews);
         btnReviews.setEnabled (false);
+        btnReviews.setOnClickListener (new View.OnClickListener ()
+        {
+            @Override
+            public void onClick (View v)
+            {
+                ReviewsFragment reviewsFragment = new ReviewsFragment ();
+                Bundle bundle = new Bundle ();
+                bundle.putInt (Defines.MoviePos, moviePos);
+                reviewsFragment.setArguments (bundle);
+
+                // Get the fragment manager
+                FragmentManager     fragmentManager      = getFragmentManager ();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+                fragmentTransaction.replace (R.id.content_frame, reviewsFragment);
+
+                fragmentTransaction.addToBackStack (null);
+                fragmentTransaction.commit ();
+            }
+        });
 
         btnFavs = (Button) rootView.findViewById (R.id.btnFavs);
         if (bucket.isFav (theMovieDetails.getId ()))
@@ -95,6 +106,7 @@ public class MovieDetailFragment extends Fragment
         {
             btnFavs.setText (Defines.SetFav);
         }
+
         btnFavs.setOnClickListener (new View.OnClickListener ()
         {
             @Override
@@ -138,33 +150,6 @@ public class MovieDetailFragment extends Fragment
     {
         inflater.inflate (R.menu.movie_detail_menu, menu);
     }
-
-    /**
-     * Handles back button
-     *
-     * @param item
-     * @return
-     */
-    @Override
-    public boolean onOptionsItemSelected (MenuItem item)
-    {
-        if (item.getItemId () == android.R.id.home)
-        {
-            OnMovieDetailBackListener listener = (OnMovieDetailBackListener) getActivity ();
-            listener.OnDetailBack ();
-            return true;
-        }
-
-        return super.onOptionsItemSelected (item);
-    }
-
-    /*
-    // TODO fix this poor implementation of data passing
-    public void setMovieDB (MovieDB theMovie)
-    {
-        theMovieDetails = theMovie;
-    }
-*/
 
     private class MovieArtifacts extends AsyncTask<String, Void, JSONArray>
     {
@@ -264,7 +249,9 @@ public class MovieDetailFragment extends Fragment
             int count = array.length ();
             String s = Integer.toString (count) + " reviews";
             btnReviews.setText (s);
-            btnReviews.setEnabled (true);
+
+            if (count > 0) btnReviews.setEnabled (true);
+            else btnReviews.setEnabled (false);
         }
 
         private void processTrailerJSON (JSONArray array)
