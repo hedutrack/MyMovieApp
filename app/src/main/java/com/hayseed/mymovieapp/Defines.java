@@ -9,4 +9,5 @@ public class Defines
     public final static String SetFav = "Set as fav";
     public final static String UnsetFav ="Remove as fav";
     public final static String SortOrderFavs = "Favs";
+    public final static String MoviePos = "MoviePos";
 }
