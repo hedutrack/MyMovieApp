@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.hayseed.mymovieapp.utils.URLConnection;
@@ -34,6 +36,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     private ProgressDialog progress;
     private static String currentSortOrder = "";
 
+    private ViewGroup gridViewLayout;
+    private ViewGroup movieDetailLayout;
+
     @Override
     protected void onCreate (Bundle savedInstanceState)
     {
@@ -41,6 +46,36 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         setContentView (R.layout.activity_main);
 
         bucket = MovieBucket.getInstance (this);
+
+        if (savedInstanceState != null) return;
+
+        gridViewLayout = (ViewGroup) findViewById (R.id.activity_main_gridview);
+        if (gridViewLayout != null)
+        {
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
+            String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
+
+            new DiscoverMovies ().execute (sortOrder);
+        }
+
+        movieDetailLayout = (ViewGroup) findViewById (R.id.activity_main_detail);
+        if (movieDetailLayout != null)
+        {
+            MovieDetailFragment detailFragment = new MovieDetailFragment ();
+
+            Bundle bundle = new Bundle ();
+            bundle.putInt (Defines.MoviePos, 0);
+            detailFragment.setArguments (bundle);
+
+            // Get the fragment manager
+            FragmentManager     fragmentManager      = getFragmentManager ();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+            fragmentTransaction.replace (R.id.content_frame, detailFragment);
+
+            fragmentTransaction.addToBackStack (null);
+            fragmentTransaction.commit ();
+        }
     }
 
     @Override
@@ -103,19 +138,27 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
      */
     public void OnImageSelected (Integer pos)
     {
-        MovieDetailFragment detailFragment = new MovieDetailFragment ();
-        Bundle bundle = new Bundle ();
-        bundle.putInt (Defines.MoviePos, pos);
-        detailFragment.setArguments (bundle);
+        MovieDetailFragment detailFragment;
 
         // Get the fragment manager
         FragmentManager     fragmentManager      = getFragmentManager ();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+        detailFragment = (MovieDetailFragment) fragmentManager.findFragmentByTag (MovieDetailFragment.class.getName ());
+        if (detailFragment == null)
+        {
+            detailFragment = new MovieDetailFragment ();
 
-        fragmentTransaction.replace (R.id.content_frame, detailFragment);
+            Bundle bundle = new Bundle ();
+            bundle.putInt (Defines.MoviePos, pos);
+            detailFragment.setArguments (bundle);
 
-        fragmentTransaction.addToBackStack (null);
-        fragmentTransaction.commit ();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+            fragmentTransaction.replace (R.id.content_frame, detailFragment);
+
+            fragmentTransaction.addToBackStack (null);
+            fragmentTransaction.commit ();
+            return;
+        }
     }
 
     @Override
@@ -127,13 +170,13 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         // when finished with the YouTube activity.  If the code is omitted, another
         // copy of GridFragment is added to the backstack, on top of the copy already
         // present.
-        FragmentManager fragmentManager = getFragmentManager ();
-        if (fragmentManager.getBackStackEntryCount () > 1) return;
+        //FragmentManager fragmentManager = getFragmentManager ();
+        //if (fragmentManager.getBackStackEntryCount () > 1) return;
 
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
-        String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
+        //SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
+        //String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
 
-        new DiscoverMovies ().execute (sortOrder);
+        //new DiscoverMovies ().execute (sortOrder);
     }
 
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
