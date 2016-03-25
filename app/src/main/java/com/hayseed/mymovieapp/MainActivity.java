@@ -52,6 +52,22 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         gridViewLayout = (ViewGroup) findViewById (R.id.activity_main_gridview);
         if (gridViewLayout != null)
         {
+            // The fragment (to display the posters)
+            GridFragment gridFragment = new GridFragment ();
+            //gridFragment.setAdapterData (new ArrayList<MovieDB> ());
+
+            // Get the fragment manager
+            FragmentManager     fragmentManager      = getFragmentManager ();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+            // Add the fragment.  The magic lies in associating the fragment to a container. In this
+            // case, the container is defined in activity_main.xml.  There is a method for not
+            // associating the fragment to a container, but I'm not sure of the meaning of that.
+            fragmentTransaction.replace (R.id.content_frame, gridFragment, GridFragment.class.getName ());
+
+            fragmentTransaction.addToBackStack (GridFragment.class.getName ());
+            fragmentTransaction.commit ();
+
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
             String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
 
@@ -71,9 +87,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             FragmentManager     fragmentManager      = getFragmentManager ();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
 
-            fragmentTransaction.replace (R.id.content_frame, detailFragment);
+            fragmentTransaction.replace (R.id.content_frame, detailFragment, MovieDetailFragment.class.getName ());
 
-            fragmentTransaction.addToBackStack (null);
+            fragmentTransaction.addToBackStack (MovieDetailFragment.class.getName ());
             fragmentTransaction.commit ();
         }
     }
@@ -155,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             fragmentTransaction.replace (R.id.content_frame, detailFragment);
 
-            fragmentTransaction.addToBackStack (null);
+            fragmentTransaction.addToBackStack (MovieDetailFragment.class.getName ());
             fragmentTransaction.commit ();
             return;
         }
@@ -295,21 +311,14 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             MovieBucket bucket = MovieBucket.getInstance (getApplicationContext ());
             bucket.setMovies (movieDBs);
 
-            // The fragment (to display the posters)
-            GridFragment gridFragment = new GridFragment ();
-            gridFragment.setAdapterData (movieDBs);
-
             // Get the fragment manager
-            FragmentManager     fragmentManger      = getFragmentManager ();
-            FragmentTransaction fragmentTransaction = fragmentManger.beginTransaction ();
+            FragmentManager     fragmentManager      = getFragmentManager ();
+            GridFragment gridFragment = (GridFragment) fragmentManager.findFragmentByTag (GridFragment.class.getName ());
+            if (gridFragment != null)
+            {
+                gridFragment.setAdapterData (movieDBs);
+            }
 
-            // Add the fragment.  The magic lies in associating the fragment to a container. In this
-            // case, the container is defined in activity_main.xml.  There is a method for not
-            // associating the fragment to a container, but I'm not sure of the meaning of that.
-            fragmentTransaction.replace (R.id.content_frame, gridFragment);
-
-            fragmentTransaction.addToBackStack (null);
-            fragmentTransaction.commit ();
         }
     }
 }

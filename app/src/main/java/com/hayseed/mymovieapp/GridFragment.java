@@ -19,6 +19,7 @@ public class GridFragment extends Fragment
     ArrayList<MovieDB> movieList;
 
     private GridAdapter             gridAdapter;
+    private GridView gridView;
     private OnImageSelectedListener listener;
 
     public interface OnImageSelectedListener
@@ -33,10 +34,11 @@ public class GridFragment extends Fragment
         View rootView = inflater.inflate (R.layout.fragment_main, container, false);
 
         // create the adapter
-        gridAdapter = new GridAdapter (getActivity (), movieList);
+
+        gridAdapter = new GridAdapter (getActivity (), movieList == null ? new ArrayList<MovieDB> () : movieList);
 
         // Get the grid view
-        GridView gridView = (GridView) rootView.findViewById (R.id.gridview);
+        gridView = (GridView) rootView.findViewById (R.id.gridview);
 
         // Attach the adapter
         gridView.setAdapter (gridAdapter);
@@ -69,5 +71,9 @@ public class GridFragment extends Fragment
     public void setAdapterData (ArrayList<MovieDB> list)
     {
         movieList = list;
+
+        // TODO To refresh the grid view.  Is this the best approach?
+        gridAdapter = new GridAdapter (getActivity (), movieList);
+        gridView.setAdapter (gridAdapter);
     }
 }
