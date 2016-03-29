@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             // Add the fragment.  The magic lies in associating the fragment to a container. In this
             // case, the container is defined in activity_main.xml.  There is a method for not
             // associating the fragment to a container, but I'm not sure of the meaning of that.
-            fragmentTransaction.replace (R.id.content_frame, gridFragment, GridFragment.class.getName ());
+            fragmentTransaction.replace (gridViewLayout.getId (), gridFragment, GridFragment.class.getName ());
 
-            fragmentTransaction.addToBackStack (GridFragment.class.getName ());
+            //fragmentTransaction.addToBackStack (GridFragment.class.getName ());
             fragmentTransaction.commit ();
 
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
@@ -87,9 +87,9 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             FragmentManager     fragmentManager      = getFragmentManager ();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
 
-            fragmentTransaction.replace (R.id.content_frame, detailFragment, MovieDetailFragment.class.getName ());
+            fragmentTransaction.replace (movieDetailLayout.getId (), detailFragment, MovieDetailFragment.class.getName ());
 
-            fragmentTransaction.addToBackStack (MovieDetailFragment.class.getName ());
+            //fragmentTransaction.addToBackStack (MovieDetailFragment.class.getName ());
             fragmentTransaction.commit ();
         }
     }
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
 
-            fragmentTransaction.replace (R.id.content_frame, detailFragment);
+            fragmentTransaction.replace (detailFragment.getId (), detailFragment);
 
             fragmentTransaction.addToBackStack (MovieDetailFragment.class.getName ());
             fragmentTransaction.commit ();

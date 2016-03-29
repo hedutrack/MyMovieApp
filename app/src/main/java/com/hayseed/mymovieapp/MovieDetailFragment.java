@@ -60,7 +60,7 @@ public class MovieDetailFragment extends Fragment
     /**
      *
      */
-    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView (LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState)
     {
         View rootView = inflater.inflate (R.layout.fragment_detail, container, false);
 
@@ -90,7 +90,7 @@ public class MovieDetailFragment extends Fragment
                 FragmentManager     fragmentManager      = getFragmentManager ();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
 
-                fragmentTransaction.replace (R.id.content_frame, reviewsFragment);
+                fragmentTransaction.replace (container.getId (), reviewsFragment);
 
                 fragmentTransaction.addToBackStack (null);
                 fragmentTransaction.commit ();
