@@ -1,6 +1,6 @@
 package com.hayseed.mymovieapp;
 
-
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -133,14 +133,29 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         FragmentManager fragmentManager = getFragmentManager ();
         int i = fragmentManager.getBackStackEntryCount ();
 
-        if (fragmentManager.getBackStackEntryCount() > 1 )
-        {
-            fragmentManager.popBackStack();
-        }
-        else
+        // Test for an empty backstack
+        if (i == 0)
         {
             super.onBackPressed ();
+            return;
         }
+
+        FragmentManager.BackStackEntry f = fragmentManager.getBackStackEntryAt (i - 1);
+
+        if (f.getName ().equals (MovieDetailFragment.class.getName ()) )
+        {
+            fragmentManager.popBackStack();
+            return;
+        }
+
+        if (f.getName ().equals (ReviewsFragment.class.getName ()))
+        {
+            fragmentManager.popBackStack ();
+            return;
+        }
+
+        super.onBackPressed ();
+
     }
 
     /**
@@ -169,12 +184,14 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
 
-            fragmentTransaction.replace (detailFragment.getId (), detailFragment);
+            fragmentTransaction.replace (R.id.activity_main_gridview, detailFragment, MovieDetailFragment.class.getName ());
 
             fragmentTransaction.addToBackStack (MovieDetailFragment.class.getName ());
             fragmentTransaction.commit ();
             return;
         }
+
+        detailFragment.updateView (pos);
     }
 
     @Override
@@ -317,6 +334,12 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             if (gridFragment != null)
             {
                 gridFragment.setAdapterData (movieDBs);
+            }
+
+            MovieDetailFragment detailFragment = (MovieDetailFragment) fragmentManager.findFragmentByTag (MovieDetailFragment.class.getName ());
+            if (detailFragment != null)
+            {
+                if (movieDBs.size () > 0) detailFragment.updateView (0);
             }
 
         }
