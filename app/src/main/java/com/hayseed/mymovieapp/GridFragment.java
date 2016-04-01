@@ -1,6 +1,7 @@
 package com.hayseed.mymovieapp;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,12 @@ public class GridFragment extends Fragment
     public interface OnImageSelectedListener
     {
         public void OnImageSelected (Integer imageId);
+    }
+
+    @Override
+    public void onAttach (Context context)
+    {
+        super.onAttach (context);
     }
 
     @Override

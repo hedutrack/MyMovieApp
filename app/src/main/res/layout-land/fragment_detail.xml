@@ -26,8 +26,7 @@
             android:id="@+id/imageView"
             android:layout_width="162dp"
             android:layout_height="wrap_content"
-            android:layout_below="@id/textTitle"
-            android:layout_weight="0.31"/>
+            android:layout_below="@id/textTitle"/>
 
         <TextView
             android:id="@+id/ratingLabel"
@@ -106,10 +105,10 @@
 
         <LinearLayout
             android:id="@+id/trailerLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:orientation="vertical"
             android:layout_below="@+id/btnReviews"
-            android:orientation="vertical"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     </RelativeLayout>
 </ScrollView>

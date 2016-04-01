@@ -84,7 +84,8 @@ public class MovieDetailFragment extends Fragment
 
         /*
         This snippet exists to refresh the fragment when it comes back from the
-        ReviewsFragment.  The getArguments would result in setting moviePos to 0
+        ReviewsFragment.  The getArguments would result in setting moviePos to 0.
+        Should be using savedInstanceState
          */
         if (!init) moviePos = this.getArguments ().getInt (Defines.MoviePos);
         init = true;
@@ -172,6 +173,12 @@ public class MovieDetailFragment extends Fragment
     }
 
     @Override
+    public void onDestroy ()
+    {
+        super.onDestroy ();
+    }
+
+    @Override
     public void onResume ()
     {
         super.onResume ();
@@ -200,6 +207,7 @@ public class MovieDetailFragment extends Fragment
         this.moviePos = moviePos;
 
         theMovieDetails = MovieBucket.getInstance (getActivity ()).getMovie (moviePos);
+        if (theMovieDetails == null) return;
 
         tvTextTitle.setText (theMovieDetails.getOriginalTitle ());
         tvTextRating.setText (theMovieDetails.getVoteAverage ());
@@ -228,6 +236,23 @@ public class MovieDetailFragment extends Fragment
 
         new MovieArtifacts ().execute (theMovieDetails.getId (), Videos);
         new MovieArtifacts ().execute (theMovieDetails.getId (), Reviews);
+
+        FragmentManager fragmentManager = getFragmentManager ();
+
+        int i = fragmentManager.getBackStackEntryCount ();
+
+        // Test for an empty backstack
+        if (i == 0)
+        {
+            return;
+        }
+
+        FragmentManager.BackStackEntry f = fragmentManager.getBackStackEntryAt (i - 1);
+
+        if (f.getName ().equals (ReviewsFragment.class.getName ()) )
+        {
+            fragmentManager.popBackStack();
+        }
     }
 
     private class MovieArtifacts extends AsyncTask<String, Void, JSONArray>
@@ -326,7 +351,7 @@ public class MovieDetailFragment extends Fragment
             theMovieDetails.setReviews (array);
 
             int count = array.length ();
-            String s = Integer.toString (count) + " reviews";
+            String s = Integer.toString (count) + (count == 1 ? " review" : " reviews");
             btnReviews.setText (s);
 
             if (count > 0) btnReviews.setEnabled (true);
@@ -359,9 +384,12 @@ public class MovieDetailFragment extends Fragment
             try
             {
                 RelativeLayout ll = (RelativeLayout) getView ().findViewById (R.id.fragment_detail);
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                params.addRule (RelativeLayout.BELOW, R.id.btnReviews);
-                int baseId = R.id.btnFavs;
+                LinearLayout trailerLayout = (LinearLayout) getView ().findViewById (R.id.trailerLayout);
+
+                if (trailerLayout != null)
+                {
+                    trailerLayout.removeAllViewsInLayout ();
+                }
 
                 for (int i = 0; i < array.length (); i++)
                 {
@@ -375,12 +403,9 @@ public class MovieDetailFragment extends Fragment
                     button.setText (buttonText);
                     button.setEnabled (true);
                     button.setOnClickListener (listener);
-                    button.setLayoutParams (params);
 
-                    ll.addView (button);
 
-                    params = new RelativeLayout.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.addRule (RelativeLayout.BELOW, i+1);
+                    trailerLayout.addView (button);
                 }
             }
             catch (Exception e)
