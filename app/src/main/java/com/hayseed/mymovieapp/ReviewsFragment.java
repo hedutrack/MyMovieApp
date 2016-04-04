@@ -1,5 +1,6 @@
 package com.hayseed.mymovieapp;
 
+import android.app.ActionBar;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -34,6 +35,7 @@ public class ReviewsFragment extends Fragment
     public void onCreate (Bundle savedInstanceState)
     {
         super.onCreate (savedInstanceState);
+
     }
 
     @Override

@@ -79,6 +79,7 @@ public class MovieBucket
     public MovieDB getMovie (int movieIndex)
     {
         if (movieList == null) return null;
+        if (movieList.size () == 0) return null;
 
         if (movieIndex > movieList.size ()) return null;
 

@@ -29,6 +29,7 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,40 +43,56 @@ public class MovieDetailFragment extends Fragment
     private static final String Reviews = "reviews";
     private static final String Videos = "videos";
 
-    private Button btnFavs;
-    private Button  btnReviews;
+    private boolean init;
+
+    private int moviePos;
+    private MovieBucket bucket;
     private MovieDB theMovieDetails;
 
-    public MovieDetailFragment ()
-    {
-    }
+    private Button btnFavs;
+    private Button  btnReviews;
+    private Context c;
+    private ImageView imageView;
+    private TextView tvTextTitle;
+    private TextView tvTextRating;
+    private TextView tvTextReleaseDate;
+    private TextView tvTextPlot;
 
     @Override
     public void onCreate (Bundle savedInstanceState)
     {
         super.onCreate (savedInstanceState);
+
+        bucket = MovieBucket.getInstance (getActivity ());
     }
 
     @Override
     /**
      *
      */
-    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView (LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState)
     {
         View rootView = inflater.inflate (R.layout.fragment_detail, container, false);
 
-        final int moviePos = this.getArguments ().getInt (Defines.MoviePos);
-        final MovieBucket bucket = MovieBucket.getInstance (getActivity ());
-        theMovieDetails = bucket.getMovie (moviePos);
-        if (theMovieDetails == null) return rootView;
+        c = rootView.getContext ();
 
-        TextView tvTextTitle       = (TextView) rootView.findViewById (R.id.textTitle);
-        TextView tvTextRating      = (TextView) rootView.findViewById (R.id.textRating);
-        TextView tvTextReleaseDate = (TextView) rootView.findViewById (R.id.textReleaseDate);
-        TextView tvTextPlot        = (TextView) rootView.findViewById (R.id.textPlot);
+        tvTextTitle       = (TextView) rootView.findViewById (R.id.textTitle);
+        tvTextRating      = (TextView) rootView.findViewById (R.id.textRating);
+        tvTextReleaseDate = (TextView) rootView.findViewById (R.id.textReleaseDate);
+        tvTextPlot        = (TextView) rootView.findViewById (R.id.textPlot);
+        imageView = (ImageView) rootView.findViewById (R.id.imageView);
+
+        /*
+        This snippet exists to refresh the fragment when it comes back from the
+        ReviewsFragment.  The getArguments would result in setting moviePos to 0.
+        Should be using savedInstanceState
+         */
+        if (!init) moviePos = this.getArguments ().getInt (Defines.MoviePos);
+        init = true;
 
         btnReviews = (Button) rootView.findViewById (R.id.btnReviews);
         btnReviews.setEnabled (false);
+
         btnReviews.setOnClickListener (new View.OnClickListener ()
         {
             @Override
@@ -87,26 +104,17 @@ public class MovieDetailFragment extends Fragment
                 reviewsFragment.setArguments (bundle);
 
                 // Get the fragment manager
-                FragmentManager     fragmentManager      = getFragmentManager ();
+                FragmentManager fragmentManager = getFragmentManager ();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
 
-                fragmentTransaction.replace (R.id.content_frame, reviewsFragment);
+                fragmentTransaction.replace (container.getId (), reviewsFragment);
 
-                fragmentTransaction.addToBackStack (null);
+                fragmentTransaction.addToBackStack (ReviewsFragment.class.getName ());
                 fragmentTransaction.commit ();
             }
         });
 
         btnFavs = (Button) rootView.findViewById (R.id.btnFavs);
-        if (bucket.isFav (theMovieDetails.getId ()))
-        {
-            btnFavs.setText (Defines.UnsetFav);
-        }
-        else
-        {
-            btnFavs.setText (Defines.SetFav);
-        }
-
         btnFavs.setOnClickListener (new View.OnClickListener ()
         {
             @Override
@@ -120,6 +128,19 @@ public class MovieDetailFragment extends Fragment
                 btnFavs.setText (s);
             }
         });
+
+        theMovieDetails = bucket.getMovie (moviePos);
+        if (theMovieDetails == null) return rootView;
+
+
+        if (bucket.isFav (theMovieDetails.getId ()))
+        {
+            btnFavs.setText (Defines.UnsetFav);
+        }
+        else
+        {
+            btnFavs.setText (Defines.SetFav);
+        }
 
         tvTextTitle.setText (theMovieDetails.getOriginalTitle ());
         tvTextRating.setText (theMovieDetails.getVoteAverage ());
@@ -149,6 +170,89 @@ public class MovieDetailFragment extends Fragment
     public void onCreateOptionsMenu (Menu menu, MenuInflater inflater)
     {
         inflater.inflate (R.menu.movie_detail_menu, menu);
+    }
+
+    @Override
+    public void onDestroy ()
+    {
+        super.onDestroy ();
+    }
+
+    @Override
+    public void onResume ()
+    {
+        super.onResume ();
+
+        if (theMovieDetails == null) return;
+
+        tvTextTitle.setText (theMovieDetails.getOriginalTitle ());
+        tvTextRating.setText (theMovieDetails.getVoteAverage ());
+        tvTextReleaseDate.setText (theMovieDetails.getReleaseDate ());
+        tvTextPlot.setText (theMovieDetails.getOverview ());
+
+        String posterPath = theMovieDetails.getPosterPath ();
+
+        Uri.Builder uri = new Uri.Builder ();
+        uri.scheme ("http").authority ("image.tmdb.org")
+                .appendPath ("t")
+                .appendPath ("p")
+                .appendPath ("w185")
+                .appendEncodedPath (posterPath);
+
+        Picasso.with (c).load (uri.toString ()).into (imageView);
+    }
+
+    public void updateView (int moviePos)
+    {
+        this.moviePos = moviePos;
+
+        theMovieDetails = MovieBucket.getInstance (getActivity ()).getMovie (moviePos);
+        if (theMovieDetails == null) return;
+
+        tvTextTitle.setText (theMovieDetails.getOriginalTitle ());
+        tvTextRating.setText (theMovieDetails.getVoteAverage ());
+        tvTextReleaseDate.setText (theMovieDetails.getReleaseDate ());
+        tvTextPlot.setText (theMovieDetails.getOverview ());
+
+        String posterPath = theMovieDetails.getPosterPath ();
+
+        Uri.Builder uri = new Uri.Builder ();
+        uri.scheme ("http").authority ("image.tmdb.org")
+                .appendPath ("t")
+                .appendPath ("p")
+                .appendPath ("w185")
+                .appendEncodedPath (posterPath);
+
+        Picasso.with (c).load (uri.toString ()).into (imageView);
+
+        if (bucket.isFav (theMovieDetails.getId ()))
+        {
+            btnFavs.setText (Defines.UnsetFav);
+        }
+        else
+        {
+            btnFavs.setText (Defines.SetFav);
+        }
+
+        new MovieArtifacts ().execute (theMovieDetails.getId (), Videos);
+        new MovieArtifacts ().execute (theMovieDetails.getId (), Reviews);
+
+        FragmentManager fragmentManager = getFragmentManager ();
+
+        int i = fragmentManager.getBackStackEntryCount ();
+
+        // Test for an empty backstack
+        if (i == 0)
+        {
+            return;
+        }
+
+        FragmentManager.BackStackEntry f = fragmentManager.getBackStackEntryAt (i - 1);
+
+        if (f.getName ().equals (ReviewsFragment.class.getName ()) )
+        {
+            fragmentManager.popBackStack();
+        }
     }
 
     private class MovieArtifacts extends AsyncTask<String, Void, JSONArray>
@@ -247,7 +351,7 @@ public class MovieDetailFragment extends Fragment
             theMovieDetails.setReviews (array);
 
             int count = array.length ();
-            String s = Integer.toString (count) + " reviews";
+            String s = Integer.toString (count) + (count == 1 ? " review" : " reviews");
             btnReviews.setText (s);
 
             if (count > 0) btnReviews.setEnabled (true);
@@ -280,9 +384,12 @@ public class MovieDetailFragment extends Fragment
             try
             {
                 RelativeLayout ll = (RelativeLayout) getView ().findViewById (R.id.fragment_detail);
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                params.addRule (RelativeLayout.BELOW, R.id.btnReviews);
-                int baseId = R.id.btnFavs;
+                LinearLayout trailerLayout = (LinearLayout) getView ().findViewById (R.id.trailerLayout);
+
+                if (trailerLayout != null)
+                {
+                    trailerLayout.removeAllViewsInLayout ();
+                }
 
                 for (int i = 0; i < array.length (); i++)
                 {
@@ -296,12 +403,9 @@ public class MovieDetailFragment extends Fragment
                     button.setText (buttonText);
                     button.setEnabled (true);
                     button.setOnClickListener (listener);
-                    button.setLayoutParams (params);
 
-                    ll.addView (button);
 
-                    params = new RelativeLayout.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.addRule (RelativeLayout.BELOW, i+1);
+                    trailerLayout.addView (button);
                 }
             }
             catch (Exception e)
