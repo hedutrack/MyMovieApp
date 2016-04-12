@@ -1,9 +1,14 @@
 package com.hayseed.mymovieapp;
 
+import org.json.JSONArray;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+
 /**
  *
  */
-public class MovieDB
+public class MovieDB implements Serializable
 {
     private String id;
     private String posterPath;
@@ -11,6 +16,8 @@ public class MovieDB
     private String overview;
     private String voteAverage;
     private String releaseDate;
+    private transient JSONArray reviewArray;
+    private transient JSONArray trailerArray;
 
     public MovieDB (String movieId, String posterPath)
     {
@@ -43,10 +50,38 @@ public class MovieDB
         return releaseDate;
     }
 
+    public JSONArray getReviews ()
+    {
+        return reviewArray;
+    }
+
+    public JSONArray getTrailers ()
+    {
+        return trailerArray;
+    }
+
     public String getVoteAverage ()
     {
         return voteAverage;
     }
+
+    public int reviewCount ()
+    {
+        if (reviewArray == null) return 0;
+
+        return reviewArray.length ();
+    }
+
+    public void setReviews (JSONArray reviews)
+    {
+        reviewArray = reviews;
+    }
+
+    public void setTrailers (JSONArray trailers)
+    {
+        trailerArray = trailers;
+    }
+
     public void setReleaseDate (String releaseDate)
     {
         this.releaseDate = releaseDate;
@@ -65,5 +100,12 @@ public class MovieDB
     public void setOverview (String overview)
     {
         this.overview = overview;
+    }
+
+    public int trailerCount ()
+    {
+        if (trailerArray == null) return 0;
+
+        return trailerArray.length ();
     }
 }

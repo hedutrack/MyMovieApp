@@ -10,9 +10,11 @@
     <string-array name="pref_Sort">
         <item>Most Popular</item>
         <item>Highest Rated</item>
+        <item>Favorites</item>
     </string-array>
     <string-array name="pref_Sort_Values">
         <item>popularity.desc</item>
         <item>vote_average.desc</item>
+        <item>Favs</item>
     </string-array>
 </resources>

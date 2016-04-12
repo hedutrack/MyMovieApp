@@ -2,6 +2,6 @@
 themoviedb.org key needs to be placed in a text file named parms.txt, and located in the app assets directory.
 
 Format of the entry is expexted to be:
-themoviedb=<key>
+themoviedb=key
 
-where <key> is the moviedb provided API key.
+where key is the moviedb provided API key.

@@ -1,6 +1,6 @@
 package com.hayseed.mymovieapp;
 
-
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -8,12 +8,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.hayseed.mymovieapp.utils.URLConnection;
@@ -27,22 +30,89 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener, MovieDetailFragment.OnMovieDetailBackListener
+public class MainActivity extends AppCompatActivity implements GridFragment.OnImageSelectedListener
 {
+    private static final String TAG = MainActivity.class.getName ();
+
+    private boolean portMode;
     private static ArrayList<MovieDB> movieList;
-    private ProgressDialog progress;
+    private        MovieBucket        bucket;
+    private        ProgressDialog     progress;
     private static String currentSortOrder = "";
+    private int moviePos;
+
+    private ViewGroup gridViewLayout;
+    private ViewGroup movieDetailLayout;
+
+    private GridFragment        gridFragment;
+    private MovieDetailFragment detailFragment;
 
     @Override
     protected void onCreate (Bundle savedInstanceState)
     {
+        Log.d (TAG, "onCreate");
+
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
+
+        bucket = MovieBucket.getInstance (this);
+
+        FragmentManager fragmentManager = getFragmentManager ();
+        if (fragmentManager.getBackStackEntryCount () > 0)
+        {
+            fragmentManager.popBackStack (null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+
+        moviePos = 0;
+        if (savedInstanceState != null)
+        {
+            System.out.println (MainActivity.class.getSimpleName () + " savedInstanceState");
+            moviePos = savedInstanceState.getInt (Defines.MoviePos);
+        }
+
+        gridViewLayout = (ViewGroup) findViewById (R.id.activity_main_gridview);
+        if (gridViewLayout != null)
+        {
+            portMode = true;
+
+            if (gridFragment == null) gridFragment = new GridFragment ();
+
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+            // Add the fragment.  The magic lies in associating the fragment to a container. In this
+            // case, the container is defined in activity_main.xml.  There is a method for not
+            // associating the fragment to a container, but I'm not sure of the meaning of that.
+            fragmentTransaction.replace (gridViewLayout.getId (), gridFragment, GridFragment.class.getName ());
+            fragmentTransaction.commit ();
+
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
+            String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
+
+            new DiscoverMovies ().execute (sortOrder);
+        }
+
+        movieDetailLayout = (ViewGroup) findViewById (R.id.activity_main_detail);
+        if (movieDetailLayout != null)
+        {
+            portMode = false;
+            if (detailFragment == null) detailFragment = new MovieDetailFragment ();
+
+            Bundle bundle = new Bundle ();
+            bundle.putInt (Defines.MoviePos, moviePos);
+            detailFragment.setArguments (bundle);
+
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+            fragmentTransaction.replace (movieDetailLayout.getId (), detailFragment, MovieDetailFragment.class.getName ());
+            fragmentTransaction.commit ();
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu (Menu menu)
     {
+        Log.d (TAG, "onCreateOptionsMenu");
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater ().inflate (R.menu.menu_main, menu);
         return true;
@@ -51,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
     @Override
     public boolean onOptionsItemSelected (MenuItem item)
     {
+        Log.d (TAG, "onOptionsItemSelected");
+
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -65,9 +137,52 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
         return super.onOptionsItemSelected (item);
     }
 
+    @Override
+    protected void onPause ()
+    {
+        Log.d (TAG, "onPause");
+
+        super.onPause ();
+
+        bucket.saveFavs ();
+    }
+
+    @Override
+    public void onBackPressed ()
+    {
+        Log.d (TAG, "onBackPressed");
+
+        FragmentManager fragmentManager = getFragmentManager ();
+        int i = fragmentManager.getBackStackEntryCount ();
+
+        // Test for an empty backstack
+        if (i == 0)
+        {
+            super.onBackPressed ();
+            return;
+        }
+
+        FragmentManager.BackStackEntry f = fragmentManager.getBackStackEntryAt (i - 1);
+
+        if (f.getName ().equals (MovieDetailFragment.class.getName ()) )
+        {
+            fragmentManager.popBackStack();
+            return;
+        }
+
+        if (f.getName ().equals (ReviewsFragment.class.getName ()))
+        {
+            fragmentManager.popBackStack ();
+            return;
+        }
+
+        super.onBackPressed ();
+
+    }
+
     /**
      * Callback from GridFragment, and represents the movie image selected.  This will
-     * transition to a detail view of the movie
+     * transition to a detail view of the movie.
      *
      * <p/>
      * See <a href="http://developer.android.com/guide/components/fragments.html">Android Fragments</a>
@@ -76,36 +191,58 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
      */
     public void OnImageSelected (Integer pos)
     {
-        Intent intent = new Intent (this, DetailActivity.class);
+        Log.d (TAG, "onImageSelected");
 
-        MovieDB movieDB = movieList.get (pos);
-        intent.putExtra ("posterPath", movieDB.getPosterPath ());
-        intent.putExtra ("originalTitle", movieDB.getOriginalTitle ());
-        intent.putExtra ("overview", movieDB.getOverview ());
-        intent.putExtra ("voteAverage", movieDB.getVoteAverage ());
-        intent.putExtra ("releaseDate", movieDB.getReleaseDate ());
+        moviePos =  pos;
 
-        startActivity (intent);
-    }
+        if (portMode)
+        {
+            FragmentManager     fragmentManager      = getFragmentManager ();
 
-    /**
-     * Callback from MovieDetailFragment.  Used to signal back button.
-     */
-    public void OnDetailBack ()
-    {
-        FragmentManager fragmentManager = getFragmentManager ();
-        fragmentManager.popBackStack ();
+            Bundle bundle = new Bundle ();
+            bundle.putInt (Defines.MoviePos, pos);
+
+            detailFragment = new MovieDetailFragment ();
+            detailFragment.setArguments (bundle);
+
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction ();
+
+            fragmentTransaction.replace (R.id.activity_main_gridview, detailFragment, MovieDetailFragment.class.getName ());
+
+            fragmentTransaction.addToBackStack (MovieDetailFragment.class.getName ());
+            fragmentTransaction.commit ();
+            return;
+        }
+
+        detailFragment.updateView (pos);
     }
 
     @Override
     protected void onResume ()
     {
+        Log.d (TAG, "onResume");
+
         super.onResume ();
+    }
 
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences (this);
-        String sortOrder = sharedPrefs.getString ("Sort", "popularity.desc");
+    @Override
+    protected void onSaveInstanceState (Bundle outState)
+    {
+        Log.d (TAG, "onSaveInstanceState");
 
-        new DiscoverMovies ().execute (sortOrder);
+        super.onSaveInstanceState (outState);
+
+        outState.putInt (Defines.MoviePos, moviePos);
+    }
+
+    @Override
+    public void onSaveInstanceState (Bundle outState, PersistableBundle outPersistentState)
+    {
+        Log.d (TAG, "pnSaveInstanceState");
+
+        super.onSaveInstanceState (outState, outPersistentState);
+
+        outState.putInt (Defines.MoviePos, moviePos);
     }
 
     private class DiscoverMovies extends AsyncTask <String, Void, ArrayList<MovieDB>>
@@ -133,6 +270,12 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
             if (currentSortOrder.equals (sortOrder)) return movieList;
 
             currentSortOrder = sortOrder;
+
+            if (currentSortOrder.equals (Defines.SortOrderFavs))
+            {
+                movieList = bucket.getFavs ();
+                return movieList;
+            }
 
             try
             {
@@ -174,6 +317,7 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
 
                 movieList = new ArrayList<> ();
 
+                // TODO Building of MovieDB should be in the Bucket
                 for (int i = 0; i < array.length (); i++)
                 {
                     JSONObject detail = array.getJSONObject (i);
@@ -214,21 +358,23 @@ public class MainActivity extends AppCompatActivity implements GridFragment.OnIm
                 return;
             }
 
-            // The fragment (to display the posters)
-            GridFragment gridFragment = new GridFragment ();
-            gridFragment.setAdapterData (movieDBs);
+            MovieBucket bucket = MovieBucket.getInstance (getApplicationContext ());
+            bucket.setMovies (movieDBs);
 
             // Get the fragment manager
-            FragmentManager     fragmentManger      = getFragmentManager ();
-            FragmentTransaction fragmentTransaction = fragmentManger.beginTransaction ();
+            FragmentManager     fragmentManager      = getFragmentManager ();
+            GridFragment gridFragment = (GridFragment) fragmentManager.findFragmentByTag (GridFragment.class.getName ());
+            if (gridFragment != null)
+            {
+                gridFragment.setAdapterData (movieDBs);
+            }
 
-            // Add the fragment.  The magic lies in associating the fragment to a container. In this
-            // case, the container is defined in activity_main.xml.  There is a method for not
-            // associating the fragment to a container, but I'm not sure of the meaning of that.
-            fragmentTransaction.add (R.id.content_frame, gridFragment);
+            MovieDetailFragment detailFragment = (MovieDetailFragment) fragmentManager.findFragmentByTag (MovieDetailFragment.class.getName ());
+            if (detailFragment != null)
+            {
+                if (movieDBs.size () > 0) detailFragment.updateView (moviePos);
+            }
 
-            fragmentTransaction.addToBackStack (null);
-            fragmentTransaction.commit ();
         }
     }
 }
