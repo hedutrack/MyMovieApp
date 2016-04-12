@@ -30,4 +30,9 @@ public class FileOps
         return f;
     }
 
+    public static File getFileReference (String dirName, String fileName)
+    {
+        File f = new File (dirName + "/" + fileName);
+        return f;
+    }
 }
